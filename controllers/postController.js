@@ -43,6 +43,12 @@ const getAllPosts = async(req,res)=>{
     }
 }
 
+
+/**
+ * @desc    Get a single blog post by its ID
+ * @route   GET /api/posts/:id
+ * @access  Public
+ */
 const getPostById = async(req,res) =>{
     try{
         // The `req.params.id` is automatically populated by Express from the route (e.g., /api/posts/some_id_value).
@@ -69,8 +75,50 @@ const getPostById = async(req,res) =>{
     }
 }
 
+
+/**
+ * @desc    Update an existing blog post
+ * @route   PATCH /api/posts/:id (or PUT)
+ * @access  Public (for now)
+ */
+const updatePost = async (req,res)=>{
+    // find the post by id
+    try{
+
+        const updatePost = await Post.findByIdAndUpdate(
+            req.params.id, // the id of the post to find
+            req.body,{
+                new: true,// Option to return the document *after* the update has been applied
+                runValidators: true, // Option to enforce schema validation rules on the update
+            }
+        );
+        
+        // check if post was found
+        if(updatePost){
+            // if success
+            res.dtatus(200).json(updatePost);
+        }else{
+            // find by idd and update fxn returns null => no ID was found
+            res.status(404).json(updatePost);
+        }
+    }catch(error){
+        console.error(error);
+
+        if(error.name === 'CastError') // invalid ID formatreturned by getPostByID
+        return res.status(400).json({message:`Invalid post ID format ${req.params.id}` })
+
+         // Handle validation errors from Mongoose (e.g., a required field is set to empty).
+        if(error.name === 'ValidationError')
+            return res.status(400).json({message:'Validation Error',error:error.message})
+
+        // rest errors
+        res.status(500).json({message:'Error updating post', error:error.message});
+    }
+};
+
 module.exports = {
     createPost,
     getAllPosts,
     getPostById,
+    updatePost,
 };
