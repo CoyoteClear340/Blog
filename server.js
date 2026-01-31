@@ -6,14 +6,19 @@
 
 const express = require("express"); // load express framework form modules
 require('dotenv').config();
+const cors = require('cors')
 
 
 const app = express(); // instance of express app obj has methods for routing
 app.use(express.json())
 const mongoose = require('mongoose') // import mongoose lib
 
-
+const postRoutes = require('./routes/postRoutes')
 const PORT = process.env.PORT || 5000;
+app.use(cors());
+// app.use(express.json);
+
+app.use('/api/posts', postRoutes);
 
 const startServer = async () =>{
     try {
@@ -24,6 +29,7 @@ const startServer = async () =>{
         app.listen(PORT ,()=>{
             console.log(`sERVER RUNNNIG on ${PORT}`);
         })
+
         
     }catch(err){
         console.error('Failed to connect to MongoDB', error);
